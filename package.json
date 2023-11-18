@@ -1,5 +1,5 @@
 {
-	"name": "map-libre-demo",
+	"name": "busyplanet",
 	"version": "0.0.1",
 	"scripts": {
 		"dev": "vite dev",

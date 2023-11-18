@@ -5,11 +5,11 @@
   "sources": {
       "openmaptiles": {
           "type": "vector",
-          "tiles": ["@origin@/tiles/{z}/{x}/{y}.pbf"]
+          "tiles": ["@mbtilesOrigin@/tiles/{z}/{x}/{y}.pbf"]
       }
   },
   "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=GNJ5qiBklyw0VRDtQh85",
-  "sprite": "@origin@/sprites/busyplanet",
+  "sprite": "@spritesOrigin@/sprites/busyplanet",
   "layers": [
     {
       "id": "background",

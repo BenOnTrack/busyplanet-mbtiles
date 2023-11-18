@@ -1,16 +1,12 @@
 {
    "version": 8,
-   "id": "streets",
    "name": "Streets",
    "sources": {
       "openmaptiles": {
          "type": "vector",
          "tiles": [
             "@origin@/tiles/{z}/{x}/{y}.pbf"
-         ],
-         "attribution": "<a href=\"https://www.maptiler.com/copyright/\" target=\"_blank\">&copy; MapTiler</a> <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>",
-         "maxzoom": 14
-      }
+         ]      }
    },
    "layers": [
       {

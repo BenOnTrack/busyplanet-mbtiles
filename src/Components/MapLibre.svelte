@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	import maplibre from 'maplibre-gl';
+	import maplibre from "maplibre-gl";
 	import { page } from '$app/stores';
 	import tileDatabase from '$lib/tile_database';
 
@@ -32,12 +32,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import { Map } from 'maplibre-gl';
+	import { Map,NavigationControl } from 'maplibre-gl';
 	import { browser } from '$app/environment';
 	import { base } from '$app/paths';
 
-	export let lat = 40;
-	export let lon = -105.18;
+	export let lat = -36.88;
+	export let lon = 174.77;
 	export let zoom = 9;
 
 	$: if (map) {
@@ -63,10 +63,22 @@
 			style: style,
 			center: [lon, lat],
 			// zoom: zoom,
-			maxZoom: 2,
 			// maxTileCacheSize: 5000,
 			refreshExpiredTiles: false
 		});
+
+		map.on("load", function () {
+            // control
+            map.addControl(new NavigationControl(), "top-right");
+            map.addControl(
+                new maplibre.GeolocateControl({
+                    positionOptions: {
+                        enableHighAccuracy: true,
+                    },
+                    trackUserLocation: true,
+                })
+            );
+			});
 	});
 </script>
 

@@ -53,7 +53,7 @@ node scripts/create_tile_files.js -f 1 -t 3 tile_data/planet.mbtiles
 Currently the code expect a file named `0_2.zip` in `static`. It is up to you to change the name if you wish, and/or complete the code to download other files. Note that it is not recommended to have very large files. 
 To zip files of levels 0, 1 and 2, use:
 ```
-zip static/0_2.zip tile_files/0 tile_files/1 tile_files/2
+zip static/0_2.zip tile_files/0 tile_files/1 tile_files/2 tile_files/3 tile_files/4 tile_files/5 tile_files/6 tile_files/7 tile_files/8 tile_files/9 tile_files/10 tile_files/11 tile_files/12 tile_files/13 tile_files/14
 ```
 
 ## Style File

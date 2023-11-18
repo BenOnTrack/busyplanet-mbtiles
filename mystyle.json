@@ -8,8 +8,8 @@
           "tiles": ["@mbtilesOrigin@/tiles/{z}/{x}/{y}.pbf"]
       }
   },
-  "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=GNJ5qiBklyw0VRDtQh85",
-  "sprite": "@spritesOrigin@/sprites/busyplanet",
+  "glyphs": "@staticOrigin@/glyphs/{fontstack}/{range}.pbf",
+  "sprite": "@staticOrigin@/sprites/busyplanet",
   "layers": [
     {
       "id": "background",
@@ -2653,7 +2653,7 @@
       "source": "openmaptiles",
       "source-layer": "poi",
       "metadata": {"switch": true},
-      "minzoom": 15,
+      "minzoom": 13,
       "layout": {
         "text-anchor": "top",
         "text-field": "{name:latin}\n{name:nonlatin}",
@@ -2892,36 +2892,6 @@
         "text-halo-blur": 0.5,
         "text-halo-width": 1
       }
-    },
-    {
-      "id": "transportation_highway-shield",
-      "type": "symbol",
-      "source": "openmaptiles",
-      "source-layer": "transportation",
-      "metadata": {"switch": false},
-      "minzoom": 13,
-      "filter": [
-        "all",
-        ["==", "subclass", "highway"],
-        ["<=", "ref_length", 6],
-        ["==", "$type", "LineString"],
-        ["!in", "network", "us-interstate", "us-highway", "us-state"]
-      ],
-      "layout": {
-        "icon-image": "road_{ref_length}",
-        "icon-rotation-alignment": "viewport",
-        "icon-size": 1,
-        "symbol-placement": {
-          "base": 1,
-          "stops": [ [10, "point"], [11, "line"] ]
-        },
-        "symbol-spacing": 200,
-        "text-field": "{ref}",
-        "text-font": ["Noto Sans Regular"],
-        "text-rotation-alignment": "viewport",
-        "text-size": 10
-      },
-      "paint": {}
     },
     {
       "id": "highway-shield-us-interstate",

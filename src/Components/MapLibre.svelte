@@ -1,10 +1,10 @@
 <script context="module" lang="ts">
 	import maplibre from 'maplibre-gl';
-	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { page } from '$app/stores';
 	import tileDatabase from '$lib/tile_database';
 	import LayerColorSwitcher from '../lib/LayerColorSwitcher.svelte';
 	import { Tag } from 'carbon-components-svelte';
+	import 'maplibre-gl/dist/maplibre-gl.css';
 	import 'carbon-components-svelte/css/white.css';
 
 	if (browser) {
@@ -47,14 +47,15 @@
 	$: if (map) {
 		map.flyTo({ center: [lon, lat], zoom: zoom, essential: true });
 	}
-	// const { Map /*GeolocateControl */ } = maplibre;
-
+	// Map
 	let mapContainer: HTMLDivElement;
 	let map: Map;
 	let mbtilesOrigin: string;
 	let staticOrigin: string;
 	let targetLayers: string[];
 	let clickedSourceFeature: maplibregl.GeoJSONFeature;
+	let bookmarks = {};
+
 	// LayerColorSwitcher
 	let selectedLayer = 'water';
 	let Layercolors = [
@@ -78,21 +79,24 @@
 		id: string;
 		metadata?: { switch: boolean };
 	}
-	let tagList: string[]=[];
+	// Tags
+	let tagList: string[] = [];
+
+	// Bookmarks
 
 	onMount(async () => {
-		// Paths
-		mbtilesOrigin = `mbtiles://${$page.url.origin.split('://')[1]}`;
-		staticOrigin = `${$page.url.origin}${base}`;
+		// Map Style
 		console.log('Page Url Origin:', $page.url.origin);
 		console.log('Base path:', base);
-		// MapLibre style
+		mbtilesOrigin = `mbtiles://${$page.url.origin.split('://')[1]}`;
+		staticOrigin = `${$page.url.origin}${base}`;
 		const style = await (await fetch(`${base}/mystyle.json`)).json();
 		style.sources.openmaptiles.tiles = style.sources.openmaptiles.tiles.map((s: string) => {
 			return s.replace('@mbtilesOrigin@', mbtilesOrigin);
 		});
 		style.sprite = style.sprite.replace('@staticOrigin@', staticOrigin);
 		style.glyphs = style.glyphs.replace('@staticOrigin@', staticOrigin);
+		// Layer Color Switcher
 		layerColorIds = style.layers
 			.map((layer, index) => ({
 				id: index,
@@ -102,8 +106,13 @@
 				const layerData = style.layers[layer.id];
 				return layerData.metadata && layerData.metadata.switch === false;
 			});
+		// Bookmarks
+		bookmarks = await (await fetch(`${base}/bookmarks.geojson`)).json();
+		console.log('bookmarks:', bookmarks);
 		let bounds = new maplibre.LngLatBounds([174.682908, -36.93552], [174.888902, -36.83529]);
 		targetLayers = ['poi-food_and_drink', 'poi-lodging', 'poi-transportation'];
+
+		// Map
 		map = new Map({
 			container: mapContainer,
 			style: style,
@@ -125,6 +134,7 @@
 					trackUserLocation: true
 				})
 			);
+
 			map.on('click', (e) => {
 				let features = map.queryRenderedFeatures(e.point, {
 					layers: targetLayers
@@ -144,7 +154,7 @@
 	});
 
 	function updateFeatureInfo() {
-		tagList=[]
+		tagList = [];
 		const propertiesToInclude = ['name:latin', 'class', 'subclass', 'category', 'cuisine'];
 
 		propertiesToInclude.forEach((property) => {
@@ -165,10 +175,10 @@
 	<LayerColorSwitcher {selectedLayer} {layerColorIds} {Layercolors} {map} />
 	<div id="feature-info">
 		{#if tagList.length > 0}
-		{#each tagList as tag (tag)}
-		  <Tag>{tag}</Tag>
-		{/each}
-	  {/if}
+			{#each tagList as tag (tag)}
+				<Tag>{tag}</Tag>
+			{/each}
+		{/if}
 	</div>
 </div>
 

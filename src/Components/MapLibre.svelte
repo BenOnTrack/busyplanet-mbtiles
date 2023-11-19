@@ -1,11 +1,13 @@
 <script context="module" lang="ts">
-	import maplibre from "maplibre-gl";
+	import maplibre from 'maplibre-gl';
+	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { page } from '$app/stores';
 	import tileDatabase from '$lib/tile_database';
-
+	import LayerColorSwitcher from '../lib/LayerColorSwitcher.svelte';
+	
 	if (browser) {
 		tileDatabase?.on('ready', () => {
-			maplibre.addProtocol('custom', (params, callback) => {
+			maplibre.addProtocol('mbtiles', (params, callback) => {
 				const filePath = params.url.split('://')[1];
 				const arg = params.url.match(/\/([0-9]+)\/([0-9]+)\/([0-9]+)\.pbf/);
 				if (arg?.length != 4) return callback(new Error(`Tile fetch error: bad params`));
@@ -32,67 +34,149 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import { Map,NavigationControl } from 'maplibre-gl';
+	import { Map, NavigationControl } from 'maplibre-gl';
 	import { browser } from '$app/environment';
 	import { base } from '$app/paths';
 
 	export let lat = -36.88;
 	export let lon = 174.77;
-	export let zoom = 9;
+	export let zoom = 12;
 
 	$: if (map) {
 		map.flyTo({ center: [lon, lat], zoom: zoom, essential: true });
 	}
 	// const { Map /*GeolocateControl */ } = maplibre;
 
-	let container: HTMLDivElement;
+	let mapContainer: HTMLDivElement;
 	let map: Map;
+	let mbtilesOrigin: string;
+	let staticOrigin: string;
+	let targetLayers: string[];
+	let clickedSourceFeature: maplibregl.GeoJSONFeature;
+	// LayerColorSwitcher
+	let selectedLayer = 'water';
+	let Layercolors = [
+		'#ffffcc',
+		'#a1dab4',
+		'#41b6c4',
+		'#2c7fb8',
+		'#253494',
+		'#fed976',
+		'#feb24c',
+		'#fd8d3c',
+		'#f03b20',
+		'#bd0026'
+	];
+	interface LayerColorId {
+		id: number;
+		text: string;
+	}
+	let layerColorIds: LayerColorId[] = [];
+	interface Layer {
+		id: string;
+		metadata?: { switch: boolean };
+	}
 
 	onMount(async () => {
-		console.log('Base path', base);
+		// Paths
+		mbtilesOrigin = `mbtiles://${$page.url.origin.split('://')[1]}`;
+		staticOrigin = `${$page.url.origin}${base}`;
+		console.log('Page Url Origin:', $page.url.origin);
+		console.log('Base path:', base);
+		// MapLibre style
 		const style = await (await fetch(`${base}/mystyle.json`)).json();
-		// Replace the origin in the template file with the page origin, as it is where the tile endpoint
-		// run.
 		style.sources.openmaptiles.tiles = style.sources.openmaptiles.tiles.map((s: string) => {
-			const customOrigin = `custom://${$page.url.origin.split('://')[1]}`;
-			return s.replace('@origin@', customOrigin);
+			return s.replace('@mbtilesOrigin@', mbtilesOrigin);
 		});
-
+		style.sprite = style.sprite.replace('@staticOrigin@', staticOrigin);
+		style.glyphs = style.glyphs.replace('@staticOrigin@', staticOrigin);
+		layerColorIds = style.layers
+			.map((layer, index) => ({
+				id: index,
+				text: layer.id
+			}))
+			.filter((layer) => {
+				const layerData = style.layers[layer.id];
+				return layerData.metadata && layerData.metadata.switch === false;
+			});
+		let bounds = new maplibre.LngLatBounds([174.682908, -36.93552], [174.888902, -36.83529]);
+		targetLayers = ['poi-food_and_drink', 'poi-lodging', 'poi-transportation'];
 		map = new Map({
-			container: container,
+			container: mapContainer,
 			style: style,
 			center: [lon, lat],
 			// zoom: zoom,
 			// maxTileCacheSize: 5000,
-			refreshExpiredTiles: false
+			refreshExpiredTiles: false,
+			maxBounds: bounds
 		});
 
-		map.on("load", function () {
-            // control
-            map.addControl(new NavigationControl(), "top-right");
-            map.addControl(
-                new maplibre.GeolocateControl({
-                    positionOptions: {
-                        enableHighAccuracy: true,
-                    },
-                    trackUserLocation: true,
-                })
-            );
+		map.on('load', function () {
+			// control
+			map.addControl(new NavigationControl(), 'top-right');
+			map.addControl(
+				new maplibre.GeolocateControl({
+					positionOptions: {
+						enableHighAccuracy: true
+					},
+					trackUserLocation: true
+				})
+			);
+			map.on('click', (e) => {
+				let features = map.queryRenderedFeatures(e.point, {
+					layers: targetLayers
+				});
+				if (!features.length) return;
+				else {
+					console.log(features[0]);
+					clickedSourceFeature = features[0];
+					map.flyTo({
+						center: clickedSourceFeature.geometry.coordinates,
+						zoom: 20
+					});
+					updateFeatureInfo();
+				}
 			});
+		});
 	});
+
+	function updateFeatureInfo() {
+		document.getElementById('feature-name').textContent = clickedSourceFeature['properties']['name:latin'];
+		document.getElementById('feature-class').textContent = clickedSourceFeature['properties']['class'];
+		document.getElementById('feature-subclass').textContent = clickedSourceFeature['properties']['subclass'];
+		document.getElementById('feature-category').textContent = clickedSourceFeature['properties']['category'];
+		document.getElementById('feature-cuisine').textContent = clickedSourceFeature['properties']['cuisine']||"";
+	}
 </script>
 
-<svelte:head>
+<!-- <svelte:head>
 	<link rel="stylesheet" href="https://cdn.skypack.dev/maplibre-gl/dist/maplibre-gl.css" />
-</svelte:head>
+</svelte:head> -->
 
-<div class="mapContainer" bind:this={container} />
+<div class="container">
+	<div id="map" bind:this={mapContainer} />
+	<LayerColorSwitcher {selectedLayer} {layerColorIds} {Layercolors} {map} />
+	<div id="feature-info">
+		<p id="feature-name"></p>
+		<p id="feature-class"></p>
+		<p id="feature-subclass"></p>
+		<p id="feature-category"></p>
+		<p id="feature-cuisine"></p>
+	</div>
+</div>
 
 <style>
-	div {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		width: 100%;
+	.container {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+	#map {
+		width: 100%; /* Adjust as needed */
+		height: 80vh; /* Adjust as needed */
+		float: left;
+	}
+	#feature-info {
+		padding: 10px;
 	}
 </style>

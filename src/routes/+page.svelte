@@ -23,10 +23,12 @@
 			await tileDatabase?.open().catch(function (e) {
 				console.error("Open failed: " + e.stack);
 			})
-			const file = '/_tiles.zip';
+			
+			
+			const file = '/tiles_data.zip';
 			let st = (await tileDatabase?.downloadStatus.where('file').equals(file).first())?.status;
 			if (st !== 'loaded') {
-				await workerDownload('/_tiles.zip');
+				await workerDownload(file);
 				st = (await tileDatabase?.downloadStatus.where('file').equals(file).first())?.status;
 			}
 			status = st || 'unknown';

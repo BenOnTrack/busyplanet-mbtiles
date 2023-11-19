@@ -3283,8 +3283,7 @@
       "source-layer": "label",
       "metadata": {"switch": false},
       "filter": [ "all", ["==", "class", "housenumber"] ],
-      "minzoom": 17,
-      "maxzoom": 24,
+      "minzoom": 14,
       "layout": {
         "text-font": ["Noto Sans Regular"],
         "text-size": 10,

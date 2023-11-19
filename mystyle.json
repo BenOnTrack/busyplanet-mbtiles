@@ -2464,6 +2464,21 @@
       "paint": {"icon-opacity": 0.5}
     },
     {
+      "id": "label_housenumber",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "label",
+      "metadata": {"switch": false},
+      "filter": [ "all", ["==", "class", "housenumber"] ],
+      "minzoom": 14,
+      "layout": {
+        "text-font": ["Noto Sans Regular"],
+        "text-size": 10,
+        "text-field": "{housenumber}"
+      },
+      "paint": {"text-color": "rgba(119, 102, 85, 0.69)"}
+    },
+    {
       "id": "attraction-heat",
       "type": "heatmap",
       "source": "openmaptiles",
@@ -3275,21 +3290,6 @@
         "text-halo-color": "rgba(255,255,255,0.8)",
         "text-halo-width": 2
       }
-    },
-    {
-      "id": "label_housenumber",
-      "type": "symbol",
-      "source": "openmaptiles",
-      "source-layer": "label",
-      "metadata": {"switch": false},
-      "filter": [ "all", ["==", "class", "housenumber"] ],
-      "minzoom": 14,
-      "layout": {
-        "text-font": ["Noto Sans Regular"],
-        "text-size": 10,
-        "text-field": "{housenumber}"
-      },
-      "paint": {"text-color": "rgba(119, 102, 85, 0.69)"}
     }
   ]
 }

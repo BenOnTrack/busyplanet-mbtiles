@@ -78,7 +78,7 @@
 		id: string;
 		metadata?: { switch: boolean };
 	}
-	let tagList: string[]=[null]
+	let tagList: string[]=[];
 
 	onMount(async () => {
 		// Paths
@@ -164,9 +164,11 @@
 	<div id="map" bind:this={mapContainer} />
 	<LayerColorSwitcher {selectedLayer} {layerColorIds} {Layercolors} {map} />
 	<div id="feature-info">
+		{#if tagList.length > 0}
 		{#each tagList as tag (tag)}
-			<Tag>{tag}</Tag>
+		  <Tag>{tag}</Tag>
 		{/each}
+	  {/if}
 	</div>
 </div>
 

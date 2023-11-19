@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import tileDatabase from '$lib/tile_database';
 	import LayerColorSwitcher from '../lib/LayerColorSwitcher.svelte';
+	import TagsInput from 'svelte-tags-input';
 	
 	if (browser) {
 		tileDatabase?.on('ready', () => {

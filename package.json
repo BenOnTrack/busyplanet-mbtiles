@@ -30,6 +30,7 @@
 	"type": "module",
 	"dependencies": {
 		"@mapbox/togeojson": "^0.16.2",
+		"@turf/turf": "^6.5.0",
 		"better-sqlite3": "^8.7.0",
 		"comlink": "^4.4.1",
 		"commander": "11.1.0",

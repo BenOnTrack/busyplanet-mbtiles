@@ -4,8 +4,9 @@
 	import { page } from '$app/stores';
 	import tileDatabase from '$lib/tile_database';
 	import LayerColorSwitcher from '../lib/LayerColorSwitcher.svelte';
-	import TagsInput from 'svelte-tags-input';
-	
+	import { Tag } from 'carbon-components-svelte';
+	import 'carbon-components-svelte/css/white.css';
+
 	if (browser) {
 		tileDatabase?.on('ready', () => {
 			maplibre.addProtocol('mbtiles', (params, callback) => {
@@ -77,6 +78,7 @@
 		id: string;
 		metadata?: { switch: boolean };
 	}
+	let tagList: string[]=[null]
 
 	onMount(async () => {
 		// Paths
@@ -142,11 +144,15 @@
 	});
 
 	function updateFeatureInfo() {
-		document.getElementById('feature-name').textContent = clickedSourceFeature['properties']['name:latin'];
-		document.getElementById('feature-class').textContent = clickedSourceFeature['properties']['class'];
-		document.getElementById('feature-subclass').textContent = clickedSourceFeature['properties']['subclass'];
-		document.getElementById('feature-category').textContent = clickedSourceFeature['properties']['category'];
-		document.getElementById('feature-cuisine').textContent = clickedSourceFeature['properties']['cuisine']||"";
+		tagList=[]
+		const propertiesToInclude = ['name:latin', 'class', 'subclass', 'category', 'cuisine'];
+
+		propertiesToInclude.forEach((property) => {
+			const value = clickedSourceFeature['properties'][property];
+			if (value !== undefined && value !== null && value !== '') {
+				tagList.push(value);
+			}
+		});
 	}
 </script>
 
@@ -158,11 +164,9 @@
 	<div id="map" bind:this={mapContainer} />
 	<LayerColorSwitcher {selectedLayer} {layerColorIds} {Layercolors} {map} />
 	<div id="feature-info">
-		<p id="feature-name"></p>
-		<p id="feature-class"></p>
-		<p id="feature-subclass"></p>
-		<p id="feature-category"></p>
-		<p id="feature-cuisine"></p>
+		{#each tagList as tag (tag)}
+			<Tag>{tag}</Tag>
+		{/each}
 	</div>
 </div>
 

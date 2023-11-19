@@ -1,5 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
+import { viteCommonjs } from '@originjs/vite-plugin-commonjs';
 
 /** @type {import('vite').UserConfig} */
 const config = {
@@ -8,9 +9,11 @@ const config = {
 		format: 'es',
 	},
 	optimizeDeps: {
-		include: 'jszip'
+		include: []
 	},
-	plugins: [sveltekit(),
+	plugins: [
+		viteCommonjs(),	
+	sveltekit(),
 	SvelteKitPWA({
 		strategies: 'generateSW',
 		registerType: 'autoUpdate',
@@ -45,7 +48,8 @@ const config = {
 		//   srcDir: 'src',
 		//   filename: 'my-sw.js', // or `my-sw.ts`
 		/* other pwa options */
-	})]
+	}),
+]
 };
 
 export default config;

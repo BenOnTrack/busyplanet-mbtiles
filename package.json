@@ -19,6 +19,7 @@
 		"@sveltejs/kit": "^1.25.1",
 		"@vite-pwa/assets-generator": "^0.0.10",
 		"@vite-pwa/sveltekit": "^0.2.7",
+		"carbon-components-svelte": "^0.82.1",
 		"gh-pages": "^6.0.0",
 		"svelte": "^4.0.5",
 		"svelte-check": "^3.4.3",
@@ -30,6 +31,7 @@
 	"type": "module",
 	"dependencies": {
 		"@mapbox/togeojson": "^0.16.2",
+		"@originjs/vite-plugin-commonjs": "^1.0.3",
 		"@turf/turf": "^6.5.0",
 		"better-sqlite3": "^8.7.0",
 		"comlink": "^4.4.1",
@@ -38,6 +40,7 @@
 		"dotenv": "^16.3.1",
 		"jszip": "^3.10.1",
 		"maplibre-gl": "^3.3.1",
-		"pako": "^2.0.4"
+		"pako": "^2.0.4",
+		"svelte-tags-input": "^5.0.0"
 	}
 }

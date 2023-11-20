@@ -55,26 +55,12 @@
 	let targetLayers: string[];
 	let clickedSourceFeature: maplibregl.GeoJSONFeature;
 	let bookmarks = {};
-
-	// LayerColorSwitcher
-	let selectedLayer = 'water';
-	let Layercolors = [
-		'#ffffcc',
-		'#a1dab4',
-		'#41b6c4',
-		'#2c7fb8',
-		'#253494',
-		'#fed976',
-		'#feb24c',
-		'#fd8d3c',
-		'#f03b20',
-		'#bd0026'
-	];
+	
 	interface LayerColorId {
 		id: number;
 		text: string;
 	}
-	let layerColorIds: LayerColorId[] = [];
+	let layerColorSwitcherIds: LayerColorId[] = [];
 	interface Layer {
 		id: string;
 		metadata?: { switch: boolean };
@@ -97,14 +83,14 @@
 		style.sprite = style.sprite.replace('@staticOrigin@', staticOrigin);
 		style.glyphs = style.glyphs.replace('@staticOrigin@', staticOrigin);
 		// Layer Color Switcher
-		layerColorIds = style.layers
+		layerColorSwitcherIds = style.layers
 			.map((layer, index) => ({
 				id: index,
 				text: layer.id
 			}))
 			.filter((layer) => {
 				const layerData = style.layers[layer.id];
-				return layerData.metadata && layerData.metadata.switch === false;
+				return layerData.metadata && layerData.metadata.color && layerData.metadata.color=== true;
 			});
 		// Bookmarks
 		bookmarks = await (await fetch(`${base}/bookmarks.geojson`)).json();
@@ -172,7 +158,7 @@
 
 <div class="container">
 	<div id="map" bind:this={mapContainer} />
-	<LayerColorSwitcher {selectedLayer} {layerColorIds} {Layercolors} {map} />
+	<LayerColorSwitcher {map} {layerColorSwitcherIds} />
 	<div id="feature-info">
 		{#if tagList.length > 0}
 			{#each tagList as tag (tag)}

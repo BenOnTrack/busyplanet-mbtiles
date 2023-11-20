@@ -1,12 +1,26 @@
 <!-- LayerColorSwitcher -->
-<script>
-    export let selectedLayer; // initial layer selected in the dropdown
-    export let layerColorIds; //  value/label for the layers
-    export let Layercolors; // colors for the layers
+<script lang="ts">
     export let map; // map to apply the style to
+    export let layerColorSwitcherIds; //  value/label for the layers
     import {
         changeLayerColor,
     } from "../utils/MapFunctions";
+
+    // LayerColorSwitcher
+	let selectedLayer:string = 'water';
+
+    let Layercolors:string[] = [
+		'#ffffcc',
+		'#a1dab4',
+		'#41b6c4',
+		'#2c7fb8',
+		'#253494',
+		'#fed976',
+		'#feb24c',
+		'#fd8d3c',
+		'#f03b20',
+		'#bd0026'
+	];
 </script>
   
   <div class="map-overlay top">
@@ -14,7 +28,7 @@
           <fieldset>
               <!-- <label for="layer">Layer Style</label> -->
               <select id="layer" bind:value={selectedLayer}>
-                  {#each layerColorIds as layerId (layerId.text)}
+                  {#each layerColorSwitcherIds as layerId (layerId.text)}
                       <option value={layerId.text}>{layerId.text}</option>
                   {/each}
               </select>

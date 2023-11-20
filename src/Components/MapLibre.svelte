@@ -3,9 +3,12 @@
 	import { page } from '$app/stores';
 	import tileDatabase from '$lib/tile_database';
 	import LayerColorSwitcher from '../lib/LayerColorSwitcher.svelte';
-	import { Tag } from 'carbon-components-svelte';
+	import { Tag, MultiSelect } from 'carbon-components-svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import 'carbon-components-svelte/css/white.css';
+	import {
+        toggleVisibility
+    } from "../utils/MapFunctions";
 
 	if (browser) {
 		tileDatabase?.on('ready', () => {
@@ -55,12 +58,16 @@
 	let targetLayers: string[];
 	let clickedSourceFeature: maplibregl.GeoJSONFeature;
 	let bookmarks = {};
-	
-	interface LayerColorId {
+
+	interface StyleLayer {
 		id: number;
 		text: string;
+		visibility: string;
 	}
-	let layerColorSwitcherIds: LayerColorId[] = [];
+	let styleLayers: StyleLayer[];
+	let layerColorSwitcherIds: StyleLayer[] = [];
+	let layerSwitcherIds: StyleLayer[] = [];
+
 	interface Layer {
 		id: string;
 		metadata?: { switch: boolean };
@@ -68,7 +75,20 @@
 	// Tags
 	let tagList: string[] = [];
 
-	// Bookmarks
+	let layerSwitcherSelectedIds: number[] = [];
+
+	function handleSelect(event) {
+		if (event.detail.selected) {
+			event.detail.selected.forEach((selectedItem) => {
+				toggleVisibility(map, selectedItem.text); // Set checked to true
+			});
+		}
+		if (event.detail.unselected) {
+			event.detail.unselected.forEach((unselectedItem) => {
+				toggleVisibility(map, unselectedItem.text); // Set checked to false
+			});
+		}
+	}
 
 	onMount(async () => {
 		// Map Style
@@ -82,16 +102,27 @@
 		});
 		style.sprite = style.sprite.replace('@staticOrigin@', staticOrigin);
 		style.glyphs = style.glyphs.replace('@staticOrigin@', staticOrigin);
+		// Style Layers
+		styleLayers = style.layers.map((layer: { id: number }, id: number) => ({
+			id,
+			text: layer.id,
+			visibility: layer.layout?.visibility || null
+		}));
 		// Layer Color Switcher
-		layerColorSwitcherIds = style.layers
-			.map((layer, index) => ({
-				id: index,
-				text: layer.id
-			}))
-			.filter((layer) => {
-				const layerData = style.layers[layer.id];
-				return layerData.metadata && layerData.metadata.color && layerData.metadata.color=== true;
-			});
+		layerColorSwitcherIds = styleLayers.filter((layer) => {
+			const metadata = style.layers[layer.id]?.metadata;
+			return metadata && metadata.color === true;
+		});
+
+		// Layer Switcher
+		layerSwitcherIds = styleLayers.filter((layer) => {
+			const layerData = style.layers[layer.id];
+			return layerData.metadata && layerData.metadata.switch === true;
+		});
+		console.log(layerSwitcherIds);
+		layerSwitcherSelectedIds = layerSwitcherIds
+  .filter((layer) => layer.visibility === 'visible')
+  .map((layer) => layer.id);
 		// Bookmarks
 		bookmarks = await (await fetch(`${base}/bookmarks.geojson`)).json();
 		console.log('bookmarks:', bookmarks);
@@ -159,6 +190,13 @@
 <div class="container">
 	<div id="map" bind:this={mapContainer} />
 	<LayerColorSwitcher {map} {layerColorSwitcherIds} />
+	<MultiSelect
+		selectedIds={layerSwitcherSelectedIds}
+		titleText="Layer"
+		label="Layers to be displayed"
+		items={layerSwitcherIds}
+		on:select={handleSelect}
+	/>
 	<div id="feature-info">
 		{#if tagList.length > 0}
 			{#each tagList as tag (tag)}

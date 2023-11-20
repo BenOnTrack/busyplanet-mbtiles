@@ -3,12 +3,10 @@
 	import { page } from '$app/stores';
 	import tileDatabase from '$lib/tile_database';
 	import LayerColorSwitcher from '../lib/LayerColorSwitcher.svelte';
-	import { Tag, MultiSelect } from 'carbon-components-svelte';
+	import LayerSwitcher from '../lib/LayerSwitcher.svelte';
+	import { Tag } from 'carbon-components-svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import 'carbon-components-svelte/css/white.css';
-	import {
-        toggleVisibility
-    } from "../utils/MapFunctions";
 
 	if (browser) {
 		tileDatabase?.on('ready', () => {
@@ -67,28 +65,13 @@
 	let styleLayers: StyleLayer[];
 	let layerColorSwitcherIds: StyleLayer[] = [];
 	let layerSwitcherIds: StyleLayer[] = [];
-
+	let layerSwitcherSelectedIds:number[];
 	interface Layer {
 		id: string;
 		metadata?: { switch: boolean };
 	}
 	// Tags
 	let tagList: string[] = [];
-
-	let layerSwitcherSelectedIds: number[] = [];
-
-	function handleSelect(event) {
-		if (event.detail.selected) {
-			event.detail.selected.forEach((selectedItem) => {
-				toggleVisibility(map, selectedItem.text); // Set checked to true
-			});
-		}
-		if (event.detail.unselected) {
-			event.detail.unselected.forEach((unselectedItem) => {
-				toggleVisibility(map, unselectedItem.text); // Set checked to false
-			});
-		}
-	}
 
 	onMount(async () => {
 		// Map Style
@@ -119,10 +102,10 @@
 			const layerData = style.layers[layer.id];
 			return layerData.metadata && layerData.metadata.switch === true;
 		});
-		console.log(layerSwitcherIds);
-		layerSwitcherSelectedIds = layerSwitcherIds
-  .filter((layer) => layer.visibility === 'visible')
-  .map((layer) => layer.id);
+		layerSwitcherSelectedIds=layerSwitcherIds
+		.filter((layer) => layer.visibility === 'visible')
+		.map((layer) => layer.id);
+
 		// Bookmarks
 		bookmarks = await (await fetch(`${base}/bookmarks.geojson`)).json();
 		console.log('bookmarks:', bookmarks);
@@ -183,20 +166,10 @@
 	}
 </script>
 
-<!-- <svelte:head>
-	<link rel="stylesheet" href="https://cdn.skypack.dev/maplibre-gl/dist/maplibre-gl.css" />
-</svelte:head> -->
-
 <div class="container">
 	<div id="map" bind:this={mapContainer} />
 	<LayerColorSwitcher {map} {layerColorSwitcherIds} />
-	<MultiSelect
-		selectedIds={layerSwitcherSelectedIds}
-		titleText="Layer"
-		label="Layers to be displayed"
-		items={layerSwitcherIds}
-		on:select={handleSelect}
-	/>
+	<LayerSwitcher {map} {layerSwitcherIds} {layerSwitcherSelectedIds} />
 	<div id="feature-info">
 		{#if tagList.length > 0}
 			{#each tagList as tag (tag)}

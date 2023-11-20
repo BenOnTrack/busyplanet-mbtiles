@@ -138,7 +138,7 @@
       "type": "fill",
       "source": "openmaptiles",
       "source-layer": "landcover",
-      "metadata": {"switch": false},
+      "metadata": {"switch": false,"color":true},
       "filter": ["==", "subclass", "wood"],
       "paint": {
         "fill-antialias": {
@@ -164,7 +164,7 @@
       "type": "fill",
       "source": "openmaptiles",
       "source-layer": "landcover",
-      "metadata": {"switch": false},
+      "metadata": {"switch": false,"color":true},
       "filter": ["==", "subclass", "grass"],
       "paint": {"fill-color": "#d8e8c8", "fill-opacity": 1}
     },
@@ -390,7 +390,7 @@
       "type": "fill",
       "source": "openmaptiles",
       "source-layer": "water",
-      "metadata": {"switch": false},
+      "metadata": {"switch": false,"color":true},
       "filter": [
         "all",
         ["!=", "intermittent", "yes"],
@@ -449,7 +449,7 @@
       "type": "fill",
       "source": "openmaptiles",
       "source-layer": "landcover",
-      "metadata": {"switch": false},
+      "metadata": {"switch": false,"color":true},
       "filter": [ "all", ["==", "subclass", "sand"] ],
       "layout": {"visibility": "visible"},
       "paint": {"fill-color": "rgba(245, 238, 188, 1)", "fill-opacity": 1}
@@ -459,7 +459,7 @@
       "type": "fill",
       "source": "openmaptiles",
       "source-layer": "building",
-      "metadata": {"switch": false},
+      "metadata": {"switch": false,"color":true},
       "paint": {
         "fill-antialias": true,
         "fill-color": {

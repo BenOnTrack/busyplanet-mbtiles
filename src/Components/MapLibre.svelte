@@ -1,12 +1,18 @@
+<svelte:head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</svelte:head>
 <script context="module" lang="ts">
 	import maplibre from 'maplibre-gl';
 	import { page } from '$app/stores';
 	import tileDatabase from '$lib/tile_database';
-	import LayerColorSwitcher from '../lib/LayerColorSwitcher.svelte';
-	import LayerSwitcher from '../lib/LayerSwitcher.svelte';
+	import LayerColorSwitcher from './LayerColorSwitcher.svelte';
+	import LayerSwitcher from './LayerSwitcher.svelte';
+	import RouteDropdown from './RouteDropdown.svelte';
 	import { Tag } from 'carbon-components-svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import 'carbon-components-svelte/css/white.css';
+
+	import {getDataSetFeatureFromID,toggleRouteAndSetMapViewFromFilter} from '../utils/MapFunctions.svelte'
 
 	if (browser) {
 		tileDatabase?.on('ready', () => {
@@ -55,6 +61,7 @@
 	let staticOrigin: string;
 	let targetLayers: string[];
 	let clickedSourceFeature: maplibregl.GeoJSONFeature;
+	let clickedDataSetFeature = null;
 	let bookmarks = {};
 
 	interface StyleLayer {
@@ -65,13 +72,24 @@
 	let styleLayers: StyleLayer[];
 	let layerColorSwitcherIds: StyleLayer[] = [];
 	let layerSwitcherIds: StyleLayer[] = [];
-	let layerSwitcherSelectedIds:number[];
+	let layerSwitcherSelectedIds: number[];
 	interface Layer {
 		id: string;
 		metadata?: { switch: boolean };
 	}
 	// Tags
 	let tagList: string[] = [];
+
+	// RouteSwitcher
+	let routeDataSetFeatures = [];
+	let filteredRouteDataSetFeatures = [];
+	let groupedFilteredRouteDataSetFeatures = {};
+	let routeMin = 0;
+	let routeMax = 1;
+	const nice = (d) => {
+		if (!d && d !== 0) return '';
+		return d.toFixed(2);
+	};
 
 	onMount(async () => {
 		// Map Style
@@ -102,14 +120,27 @@
 			const layerData = style.layers[layer.id];
 			return layerData.metadata && layerData.metadata.switch === true;
 		});
-		layerSwitcherSelectedIds=layerSwitcherIds
-		.filter((layer) => layer.visibility === 'visible')
-		.map((layer) => layer.id);
+		layerSwitcherSelectedIds = layerSwitcherIds
+			.filter((layer) => layer.visibility === 'visible')
+			.map((layer) => layer.id);
+
+		// Route Switcher
+		routeDataSetFeatures = await (await fetch(`${base}/route_dataset.json`)).json();
+		console.log('routeDataSet:', routeDataSetFeatures);
+		// filteredRouteDataSetFeatures contains the filtered set
+		filteredRouteDataSetFeatures = routeDataSetFeatures;
+		// Group the features by category
+		filteredRouteDataSetFeatures.forEach((feature) => {
+			if (!groupedFilteredRouteDataSetFeatures[feature.subclass]) {
+				groupedFilteredRouteDataSetFeatures[feature.subclass] = [];
+			}
+			groupedFilteredRouteDataSetFeatures[feature.subclass].push(feature);
+		});
 
 		// Bookmarks
 		bookmarks = await (await fetch(`${base}/bookmarks.geojson`)).json();
 		console.log('bookmarks:', bookmarks);
-		let bounds = new maplibre.LngLatBounds([174.682908, -36.93552], [174.888902, -36.83529]);
+		let bounds = new maplibre.LngLatBounds([174.398279, -37.104532], [175.33349, -36.828027]);
 		targetLayers = ['poi-food_and_drink', 'poi-lodging', 'poi-transportation'];
 
 		// Map
@@ -135,6 +166,7 @@
 				})
 			);
 
+			// POI
 			map.on('click', (e) => {
 				let features = map.queryRenderedFeatures(e.point, {
 					layers: targetLayers
@@ -148,6 +180,33 @@
 						zoom: 20
 					});
 					updateFeatureInfo();
+				}
+			});
+
+			// Route_midpoint
+			map.on('click', (e) => {
+				let renderedSourceFeatures = map.queryRenderedFeatures(e.point, {
+					layers: ['route_midpoint']
+				});
+				if (!renderedSourceFeatures.length) return;
+				else {
+					clickedSourceFeature = renderedSourceFeatures[0];
+					console.log('clickedSourceFeature', clickedSourceFeature);
+					clickedDataSetFeature = getDataSetFeatureFromID(
+						filteredRouteDataSetFeatures,
+						clickedSourceFeature.properties.id
+					);
+					const { id, type, bbox, members } = clickedDataSetFeature;
+					console.log('clickedDataSetFeature', clickedDataSetFeature);
+					const routeData = {
+						id: id,
+						type: type,
+						bbox: bbox,
+						zoom: 14
+					};
+					const filterWayMembers = ['in', ['id'], ['literal', members]];
+					const filterRelation = ['==', 'id', id];
+					toggleRouteAndSetMapViewFromFilter(map, filterWayMembers, filterRelation, bbox);
 				}
 			});
 		});
@@ -166,11 +225,13 @@
 	}
 </script>
 
-<div class="container">
+	<div>
 	<div id="map" bind:this={mapContainer} />
 	<LayerColorSwitcher {map} {layerColorSwitcherIds} />
 	<LayerSwitcher {map} {layerSwitcherIds} {layerSwitcherSelectedIds} />
 	<div id="feature-info">
+		<RouteDropdown {map} {filteredRouteDataSetFeatures} {groupedFilteredRouteDataSetFeatures} />
+
 		{#if tagList.length > 0}
 			{#each tagList as tag (tag)}
 				<Tag>{tag}</Tag>
@@ -178,17 +239,11 @@
 		{/if}
 	</div>
 </div>
-
 <style>
-	.container {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-	}
+
 	#map {
 		width: 100%; /* Adjust as needed */
 		height: 80vh; /* Adjust as needed */
-		float: left;
 	}
 	#feature-info {
 		padding: 10px;

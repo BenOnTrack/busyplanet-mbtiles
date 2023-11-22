@@ -25,7 +25,7 @@
 			})
 			
 			
-			const file = '/tiles_data.zip';
+			const file = '/bp.zip';
 			let st = (await tileDatabase?.downloadStatus.where('file').equals(file).first())?.status;
 			if (st !== 'loaded') {
 				await workerDownload(file);

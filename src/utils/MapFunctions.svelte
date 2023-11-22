@@ -83,6 +83,7 @@
 		}
 	}
 
+
 	export function toggleLayerIDwithFilter(map, layerId, newFilter) {
 		const noneFilter = ['in', ['id'], ['literal', [0]]];
 		const currentFilter = map.getFilter(layerId);
@@ -199,19 +200,23 @@
 	}
 	export function toggleRouteAndSetMapView(map, dataSetFeatures, featureID) {
 		const dataSetFeature = getDataSetFeatureFromID(dataSetFeatures, featureID);
+		console.log("dataSetFeature:",dataSetFeature)
 		const bbox = dataSetFeature.bbox;
-		const relationID = dataSetFeature.id;
+		console.log("bbox:",bbox)
 		const relationMembers = dataSetFeature.members;
+		console.log("relationMembers:",relationMembers)
 		const filterWayMembers = ['in', ['id'], ['literal', relationMembers]];
-		const filterRelation = ['==', 'id', relationID];
-		toggleLayerIDwithFilter(map, 'selected_route_sac_scale', filterWayMembers);
+		console.log("filterWayMembers:",filterWayMembers)
+		const filterRelation = ['==', 'id', featureID];
+		console.log("filterRelation:",filterRelation)
+		// toggleLayerIDwithFilter(map, 'selected_route_sac_scale', filterWayMembers);
 		toggleSpecificLayerIDwithFilter(map, 'selected_route', filterRelation);
 		toggleSpecificLayerIDwithFilter(map, 'selected_route_name', filterRelation);
 		setMapView(map, bbox);
 	}
 
 	export function toggleRouteAndSetMapViewFromFilter(map, filterWayMembers, filterRelation, bbox) {
-		toggleLayerIDwithFilter(map, 'selected_route_sac_scale', filterWayMembers);
+		//toggleLayerIDwithFilter(map, 'selected_route_sac_scale', filterWayMembers);
 		toggleSpecificLayerIDwithFilter(map, 'selected_route', filterRelation);
 		toggleSpecificLayerIDwithFilter(map, 'selected_route_name', filterRelation);
 		setMapView(map, bbox);
